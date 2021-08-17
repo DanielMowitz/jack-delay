@@ -21,8 +21,18 @@ fn receive_frames (in_port: &[f32], memory: &mut Vec<f32>) {
 /// if the vector is longer than the specified amount of frames.
 fn send_frames (delay_frames: usize, out_port: &mut[f32], memory: &mut Vec<f32>, flush: &mut bool) {
 	if *flush {
-		out_port.clone_from_slice(&memory[..out_port.len()]);
-		*memory = memory[out_port.len()..].into();
+		if memory.len() > out_port.len() {
+			out_port.clone_from_slice(&memory[..out_port.len()]);
+			*memory = memory[out_port.len()..].into();
+		} else {
+			for _i in 0..(out_port.len() - memory.len()) {
+				memory.push(0.0);
+			}
+
+			out_port.clone_from_slice(&memory.as_slice());
+			memory.clear();
+			*flush = false;
+		}
 	} else if memory.len() >= delay_frames {
 		*flush = true;
 	} 
